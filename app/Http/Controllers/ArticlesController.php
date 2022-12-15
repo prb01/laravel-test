@@ -33,15 +33,11 @@ class ArticlesController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store()
     {
-        request()->validate([
-            'title' => ['required', 'min:5']
-        ]);
+        $validated = $this->validateArticle();
 
-        $article = new Article();
-        $article->title = $request->title;
-        $article->save();
+        Article::create($validated);
 
         return redirect('articles/create');
     }
@@ -63,12 +59,10 @@ class ArticlesController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function edit($id)
+    public function edit(Article $article)
     {
-        $article = Article::where('id', $id)->firstOrFail();
-
         return view('articles.edit', [
-            'id' => $id,
+            'id' => $article->id,
             'title' => $article->title
         ]);
     }
@@ -80,15 +74,13 @@ class ArticlesController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, Article $article)
     {
-        $article = Article::find($id);
+        $validated = $this->validateArticle();
 
-        $article->title = $request->title;
+        $article->update($validated);
 
-        $article->save();
-
-        return redirect('articles/' . $id . '/edit');
+        return redirect('articles/' . $article->id . '/edit');
     }
 
     /**
@@ -100,5 +92,12 @@ class ArticlesController extends Controller
     public function destroy($id)
     {
         //
+    }
+
+    protected function validateArticle()
+    {
+        return request()->validate([
+            'title' => ['required', 'min:5']
+        ]);
     }
 }
